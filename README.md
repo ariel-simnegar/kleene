@@ -25,7 +25,7 @@ kleene.js supports three ways to build regular expressions:
 ```javascript
 const re = RegularExpression.fromString('(ab)*');
 ```
-2. For any FSA, a regular expression can be built that denotes the language that is decided by the FSA. The state elimination algorithm used by kleene.js for this purpose does not guarantee that the built regular expression will be minimal.
+2. For any FSA, a regular expression can be built that denotes the language that is decided by the FSA. The state elimination algorithm used by kleene.js for this purpose does not guarantee that the built regular expression will be minimal. For example, `RegularExpression.fromString('(ab)*').toDFA().minimize().toRegularExpression()` gives the regular expression `λ+a(ba)*b`, where it took me some time to realize the answer was correct if humourously suboptimal.
 ```javascript
 const re = fsa.toRegularExpression();
 ```
@@ -78,6 +78,6 @@ const dfa = new DFA(
 
 kleene.js supports several FSA operations:
 1. `fsa.toString()` returns a string representation of the FSA's mathematical model. State numbers are assigned based on a depth-first search of the FSA's graph with transitions selected in lexicographical order.
-2. `fsa.toRegularExpression()` returns a regular expression that denotes the language decided by the FSA. The state elimination algorithm used by kleene.js for this purpose does not guarantee that the built regular expression will be minimal. For example, `RegularExpression.fromString('(ab)*').toDFA().minimize().toRegularExpression()` gives the regular expression `λ+a(ba)*b`, where it took me some time to realize the answer was correct if humourously suboptimal.
+2. `fsa.toRegularExpression()` returns a regular expression that denotes the language decided by the FSA. The state elimination algorithm used by kleene.js for this purpose does not guarantee that the built regular expression will be minimal. 
 3. `dfa.minimize()` returns a minimal DFA that decides the DFA's language.
 4. `fsa.decide(s)` returns a boolean indicating whether or not `s` is in the FSA's language. For *λ*-NFAs and NFAs, this method builds and caches a DFA that decides the regular expression's language and processes `s` through the DFA, so the method will take exponential time on the first call and linear time on later calls.
