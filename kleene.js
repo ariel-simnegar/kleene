@@ -22,6 +22,7 @@ class RegularExpression {
         this.type = type;
         this.first = first;
         this.second = second;
+        this.cachedDFA = null;
     }
     /**
      * For a string s, creates an instance of RegularExpression emulating the
@@ -193,11 +194,11 @@ class RegularExpression {
         return buildRegExp(0);
     }
     /**
-     * Returns a string representation s of the RegularExpression such that
+     * Returns a string representation s of the regular expression such that
      * RegularExpression.fromString(s) produces an equivalent regular
      * expression.
      *
-     * @return {string} The RegularExpression's string representation
+     * @return {string} The regular expression's string representation
     */
     toString() {
         if (this.isLambda()) {
@@ -234,23 +235,23 @@ class RegularExpression {
         }
     }
     /**
-     * Recursively builds a LambdaNFA that decides the same language that is decided
-     * by the RegularExpression. Keeps LAMBDA-moves to a minimum by only building
-     * LambdaNFAs with the following properties:
-     * 1. The LambdaNFA has exactly one final state (which is not the initial state).
+     * Recursively builds a LAMBDA-NFA that decides the same language that is decided
+     * by the regular expression. Keeps LAMBDA-moves to a minimum by only building
+     * LAMBDA-NFAs with the following properties:
+     * 1. The LAMBDA-NFA has exactly one final state (which is not the initial state).
      * 2. There are no transitions into the initial state.
      * 3. There are no transitions out of the final state.
-     * 4. The LambdaNFA's alphabet will include every base case char present in the
-     *    the RegularExpression. If the optional parameter sigma is given, every
-     *    character a in sigma will also be included in the LambdaNFA's alphabet,
+     * 4. The LAMBDA-NFA's alphabet will include every base case char present in the
+     *    the regular expression. If the optional parameter sigma is given, every
+     *    character a in sigma will also be included in the LAMBDA-NFA's alphabet,
      *    even if a is not necessarily present as a base case char in the
-     *    RegularExpression.
+     *    regular expression.
      * This method implements the regular expression to LAMBDA-NFA algorithm in David
      * Mix Barrington's "A Mathematical Foundation for Computer Science" (14.8
      * "Constructing LAMBDA-NFA's from Regular Expressions").
      *
-     * @param {Set<char>} [sigma={}] Chars to be added to LambdaNFA's alphabet
-     * @return {LambdaNFA} A LambdaNFA satisfying the above properties
+     * @param {Set<char>} [sigma={}] Chars to be added to LAMBDA-NFA's alphabet
+     * @return {LambdaNFA} A LAMBDA-NFA satisfying the above properties
     */
     toLambdaNFA(sigma = new Set()) {
         let states, initialState, transitions, finalState, m1, m2, m2init,
@@ -285,7 +286,7 @@ class RegularExpression {
                 transitions = [new Transition(initialState, char, finalState)];
                 break;
             case 'union':
-                // m1 and m2 are the LambdaNFAs for the union's operands
+                // m1 and m2 are the LAMBDA-NFAs for the union's operands
                 m1 = this.first.toLambdaNFA(sigma);
                 m2 = this.second.toLambdaNFA(sigma);
                 // Merge m1 and m2's initial and final states and add transitions
@@ -314,7 +315,7 @@ class RegularExpression {
                 }
                 break;
             case 'cat':
-                // m1 and m2 are the LambdaNFAs for the union's operands
+                // m1 and m2 are the LAMBDA-NFAs for the union's operands
                 m1 = this.first.toLambdaNFA(sigma);
                 m2 = this.second.toLambdaNFA(sigma);
                 // Merge m1's final and m2's initial states and add transitions
@@ -371,7 +372,11 @@ class RegularExpression {
      * @return {boolean} Whether or not the string is in the language
     */
     decide(s) {
-        return this.toLambdaNFA().decide(s);
+        let cachedDFA = this.cachedDFA;
+        if (cachedDFA === null) { // Don't build DFA more than once
+            cachedDFA = this.cachedDFA = this.toDFA();
+        }
+        return cachedDFA.decide(s);
     }
     isLambda() {
         return this.type === 'star' && this.first.type === 'empty';
@@ -412,6 +417,7 @@ class FSA {
         this.initialState = initialState;
         this.transitions = transitions;
         this.finalStates = finalStates;
+        this.cachedDFA = null;
     }
     /**
      * Builds a regular expression that denotes the same language that is
@@ -709,18 +715,31 @@ Initial State: 1
 Transitions: {${transNats}}
 Final States: {${statesToNats(this.finalStates)}}`;
     }
+    /**
+     * Decides whether or not a given string is in the FSA's language.
+     *
+     * @param {string} s The string
+     * @return {boolean} Whether or not the string is in the language
+    */
+    decide(s) {
+        let cachedDFA = this.cachedDFA;
+        if (cachedDFA === null) { // Don't build DFA more than once
+            cachedDFA = this.cachedDFA = this.toDFA();
+        }
+        return cachedDFA.decide(s);
+    }
 }
 
 class LambdaNFA extends FSA {
     /**
      * Builds an NFA that decides the same language that is decided by the
-     * LambdaNFA. This method is implemented far from optimally from the
+     * LAMBDA-NFA. This method is implemented far from optimally from the
      * perspective of time complexity, but should run reasonably for small
-     * LambdaNFAs. This method implements the LAMBDA-NFA to NFA algorithm
+     * LAMBDA-NFAs. This method implements the LAMBDA-NFA to NFA algorithm
      * in David Mix Barrington's "A Mathematical Foundation for Computer
      * Science" (14.7 "Killing LAMBDA-moves: LAMBDA-NFA's into NFA's").
      *
-     * @return {NFA} An NFA that decides the LambdaNFA's language
+     * @return {NFA} An NFA that decides the LAMBDA-NFA's language
     */
     toNFA() {
         const charTransitions = [];
@@ -776,7 +795,7 @@ class LambdaNFA extends FSA {
         }
 
         // Every state with LAMBDA-moves to a state that is final in the
-        // LambdaNFA is final in the NFA
+        // LAMBDA-NFA is final in the NFA
         const finalStateSet = new Set();
         const lambdaNFAFinalStates = this.finalStates;
         const lambdaNFAFinalStatesLength = lambdaNFAFinalStates.length;
@@ -793,9 +812,6 @@ class LambdaNFA extends FSA {
     }
     toDFA() {
         return this.toNFA().toDFA();
-    }
-    decide(s) {
-        return this.toNFA().decide(s);
     }
 }
 
@@ -911,9 +927,6 @@ class NFA extends LambdaNFA {
             sigma, nfaStateSets, initialState,
             nfaStateSetTransitions, finalStates
         );
-    }
-    decide(s) {
-        return this.toDFA().decide(s);
     }
 }
 
