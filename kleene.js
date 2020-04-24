@@ -357,11 +357,11 @@ class RegularExpression {
         }
         return new LambdaNFA(sigma, states, initialState, transitions, [finalState]);
     }
-    toNFA() {
-        return this.toLambdaNFA().toNFA();
+    toNFA(sigma = new Set()) {
+        return this.toLambdaNFA(sigma).toNFA();
     }
-    toDFA() {
-        return this.toNFA().toDFA();
+    toDFA(sigma = new Set()) {
+        return this.toNFA(sigma).toDFA();
     }
     /**
      * Decides whether or not a given string is in the regular expression's
@@ -414,13 +414,13 @@ class FSA {
         this.finalStates = finalStates;
     }
     /**
-     * Builds a regular expression that decides the same language that is
+     * Builds a regular expression that denotes the same language that is
      * decided by the FSA. This method implements the FSA to regular
      * expression algorithm in David Mix Barrington's "A Mathematical
      * Foundation for Computer Science" (14.10 "State Elimination: NFA's
      * into Regular Expressions").
      *
-     * @return {RegularExpression} Decides the same language as the FSA.
+     * @return {RegularExpression} Denotes the FSA's language.
     */
     toRegularExpression() {
         // Build a RE-NFA from the FSA. A RE-NFA is an FSA which transitions
