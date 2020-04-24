@@ -42,7 +42,7 @@ const re = new RegularExpression('star',
 kleene.js supports several regular expression operations:
 1. `re.toString()` returns a string `s` such that `RegularExpression.fromString(s)` produces an equivalent regular expression.
 2. `re.toLambdaNFA()`, `re.toNFA()`, and `re.toDFA()` return the respective FSAs which decide the language denoted by the regular expression.
-3. `re.decide(s)` returns a boolean indicating whether or not `s` is in the regular expression's language. Since this method works by building a DFA that decides the regular expression's language and processing `s` through the DFA, it is often faster to cache `re.toDFA()` and call that DFA's `decide(s)` method instead.
+3. `re.decide(s)` returns a boolean indicating whether or not `s` is in the regular expression's language. Since this method works by building and caching a DFA that decides the regular expression's language and processing `s` through the DFA, the method will take exponential time on the first call and linear time on later calls.
 
 In kleene.js, the mathematical model for an FSA consists of an input alphabet *Σ*, a finite set *S* of states, an initial state *ι* in *S*, a set of final states *F* where *F* is a subset of *S*, and a set of transitions *(p, c, q)* where *p* and *q* are in *S* and *c* is a string in *Σ\** (MFCS 14.1). kleene.js includes three variants of FSAs: *λ*-NFAs, NFAs, and DFAs.
 
@@ -80,4 +80,4 @@ kleene.js supports several FSA operations:
 1. `fsa.toString()` returns a string representation of the FSA's mathematical model. State numbers are assigned based on a depth-first search of the FSA's graph with transitions selected in lexicographical order.
 2. `fsa.toRegularExpression()` returns a regular expression that denotes the language decided by the FSA. The state elimination algorithm used by kleene.js for this purpose does not guarantee that the built regular expression will be minimal. For example, `RegularExpression.fromString('(ab)*').toDFA().minimize().toRegularExpression()` gives the regular expression `λ+a(ba)*b`, where it took me some time to realize the answer was correct if humourously suboptimal.
 3. `dfa.minimize()` returns a minimal DFA that decides the DFA's language.
-4. `fsa.decide(s)` returns a boolean indicating whether or not `s` is in the FSA's language. If the FSA is not already a DFA, this method works by building a DFA that decides the FSA's language and processing `s` through the DFA, so it is often faster to cache `re.toDFA()` and call that DFA's `decide(s)` method instead.
+4. `fsa.decide(s)` returns a boolean indicating whether or not `s` is in the FSA's language. For *λ*-NFAs and NFAs, this method builds and caches a DFA that decides the regular expression's language and processes `s` through the DFA, so the method will take exponential time on the first call and linear time on later calls.
