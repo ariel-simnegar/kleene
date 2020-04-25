@@ -257,6 +257,7 @@ class RegularExpression {
         let states, initialState, transitions, finalState, m1, m2, m2init,
             m2transitions, m2transLength, m2transition;
 
+        // This function may not actually be necessary
         function pushNoDuplicates(transitions, newTransition) {
             const transLength = transitions.length;
             for (let i = 0; i < transLength; i++) {
@@ -650,12 +651,14 @@ class FSA {
         return reTransitions[0].str;
     }
     toString() {
+        // Convert FSA's alphabet to an array
         const sigma = this.sigma;
         const sigmaArray = [];
         for (const char of sigma) {
             sigmaArray.push(char);
         }
 
+        // Maps state objects to numbers
         const stateToNatMap = new Map();
         const transitions = this.transitions;
         const transLength = transitions.length;
@@ -673,7 +676,19 @@ class FSA {
             }
         }
 
+        // Build map from depth-first-search from initial state
         buildStateToNatMap(this.initialState);
+
+        // Add remaining states to map in order
+        const states = this.states;
+        const statesLength = states.length;
+        for (let i = 0; i < statesLength; i++) {
+            const state = states[i];
+            if (!stateToNatMap.has(state)) {
+                stateToNatMap.set(state, counter);
+                counter += 1;
+            }
+        }
 
         function statesToNats(states) {
             const length = states.length;
@@ -710,7 +725,7 @@ class FSA {
         }, ${t})`).join(', ');
 
         return `Alphabet: {${sigmaArray.join(', ')}}
-States: {${statesToNats(this.states)}}
+States: {${statesToNats(states)}}
 Initial State: 1
 Transitions: {${transNats}}
 Final States: {${statesToNats(this.finalStates)}}`;
