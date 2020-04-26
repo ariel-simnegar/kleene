@@ -2,7 +2,7 @@
 
 **All code written by [Ariel Simnegar](https://www.linkedin.com/in/ariel-simnegar/). Mathematical concepts and algorithms due to [Professor David Mix Barrington](https://people.cs.umass.edu/~barring/)'s "A Mathematical Foundation for Computer Science" (MFCS).**
 
-Kleene's Theorem is a result in formal language theory which states that a language is denoted by a regular expression if and only if it is decided by a DFA. kleene.js is a mathematical proof-of-concept of Kleene's Theorem. The script emulates regular expressions and finite state automatons (FSAs) from *λ*-NFAs to DFAs, providing a suite of methods for conversion between the mathematical concepts and deciding whether or not a string is in a regular language.
+Kleene's Theorem is a result in formal language theory which states that a language is denoted by a regular expression if and only if it is decided by a deterministic finite automaton (DFA). kleene.js is a mathematical proof-of-concept of Kleene's Theorem. The script emulates regular expressions and finite state automatons (FSAs) from *λ*-NFAs to DFAs, providing a suite of methods for conversion between the mathematical concepts and deciding whether or not a string is in a regular language.
 
 The mathematical model for regular expressions in kleene.js is defined by the following rules:
 1. The string `0` is a regular expression denoting the empty language.
