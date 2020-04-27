@@ -13,10 +13,10 @@ class RegularExpression {
      * expression in formal language theory.
      *
      * @constructor
-     * @param {string} type A string representing the type of the regular
+     * @param {string} type - A string representing the type of the regular
      *   expression: "empty", "char", "union", "cat", or "star"
-     * @param {RegularExpression} [first=null] The regular expression's 1st operand
-     * @param {RegularExpression} [second=null] The regular expression's 2nd operand
+     * @param {RegularExpression} [first=null] - The regular expression's 1st operand
+     * @param {RegularExpression} [second=null] - The regular expression's 2nd operand
     */
     constructor(type, first = null, second = null) {
         this.type = type;
@@ -51,7 +51,7 @@ class RegularExpression {
      *    3. The only strings in A* are those given by the above rules.
      * 6. The only regular expressions are those defined by the above rules.
      *
-     * @param {string} s The string denoting the regular expression
+     * @param {string} s - The string denoting the regular expression
      * @return {RegularExpression} The regular expression denoted by s
      * @throws {SyntaxError} s must have proper escaping and syntax
     */
@@ -94,12 +94,12 @@ class RegularExpression {
                     tokens.push(new RegularExpression('char', s[i]));
             }
         }
-        // Parser
-        // Based on https://crockford.com/javascript/tdop/tdop.html
+        // Parser based on https://crockford.com/javascript/tdop/tdop.html
         let token;
         let tokenIndex = 0;
         length = tokens.length;
 
+        // Converts token types to token binding powers (precedence)
         function typeToBP(type) {
             switch (type) {
                 case 'end': return 0;
@@ -116,6 +116,7 @@ class RegularExpression {
             }
         }
 
+        // Process next token
         function advance() {
             if (tokenIndex >= length) {
                 token = new RegularExpression('end');
@@ -125,6 +126,7 @@ class RegularExpression {
             }
         }
 
+        // Recursive regular expression builder
         function buildRegExp(rightBindingPower) {
             let left, t = token;
             advance();
@@ -250,7 +252,7 @@ class RegularExpression {
      * Mix Barrington's "A Mathematical Foundation for Computer Science" (14.8
      * "Constructing LAMBDA-NFA's from Regular Expressions").
      *
-     * @param {Set<char>} [sigma={}] Chars to be added to LAMBDA-NFA's alphabet
+     * @param {Set<char>} [sigma={}] - Chars to be added to LAMBDA-NFA's alphabet
      * @return {LambdaNFA} A LAMBDA-NFA satisfying the above properties
     */
     toLambdaNFA(sigma = new Set()) {
@@ -369,7 +371,7 @@ class RegularExpression {
      * Decides whether or not a given string is in the regular expression's
      * language.
      *
-     * @param {string} s The string
+     * @param {string} s - The string
      * @return {boolean} Whether or not the string is in the language
     */
     decide(s) {
@@ -650,6 +652,13 @@ class FSA {
         // that decides the same language that is decided by the FSA
         return reTransitions[0].str;
     }
+    /**
+     * Returns a string representation of the FSA with states labeled by natural
+     * numbers and transitions denoted by tuples (p, s, q) where p and q are state
+     * labels and s is a string or regular expression denoting the FSA's input.
+     *
+     * @return {string} The FSA's string representation
+    */
     toString() {
         // Convert FSA's alphabet to an array
         const sigma = this.sigma;
@@ -733,8 +742,8 @@ Final States: {${statesToNats(this.finalStates)}}`;
     /**
      * Decides whether or not a given string is in the FSA's language.
      *
-     * @param {string} s The string
-     * @return {boolean} Whether or not the string is in the language
+     * @param {string} s - The string
+     * @return {boolean} Whether or not the string is in the FSA's language
     */
     decide(s) {
         let cachedDFA = this.cachedDFA;
@@ -1123,6 +1132,15 @@ class DFA extends NFA {
         return new DFA(sigma, partition,
             initState, setTransitions, finalSets);
     }
+    /**
+     * Decides whether or not a given string is in the DFA's language by running
+     * the DFA's decision algorithm on the string. Runs in O(n) time where n is
+     * the length of the input string and in O(1) space as the DFA has a fixed
+     * finite set of states.
+     *
+     * @param {string} s - The input string
+     * @return {boolean} Whether or not the string is in the DFA's language
+    */
     decide(s) {
         let currentState = this.initialState;
         const length = s.length;
